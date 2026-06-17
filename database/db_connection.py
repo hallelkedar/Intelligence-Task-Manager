@@ -46,10 +46,10 @@ class DB_connection:
                            id INT AUTO_INCREMENT PRIMARY KEY,
                            title VARCHAR(50) NOT NULL,
                            description TEXT NOT NULL,
-                           loaction VARCHAR(30) NOT NULL,
+                           location VARCHAR(30) NOT NULL,
                            difficulty INT NOT NULL,
                            importance INT NOT NULL,
-                           status ENUM('NEW', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED') DEFAULT NEW,
+                           status ENUM('NEW', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED') DEFAULT 'NEW',
                            risk_level VARCHAR(50) NOT NULL,
                            assigned_agent_id INT DEFAULT NULL
                            )
