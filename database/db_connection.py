@@ -20,7 +20,7 @@ class DB_connection:
     def get_connection(self):
         if self._connection is None or not self.connection.is_connected():
             self.connect()
-        return self.connection
+        return self._connection
     
     def create_database(self):
         with self._connection.cursor() as cursor:
