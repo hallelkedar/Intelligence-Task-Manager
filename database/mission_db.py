@@ -20,7 +20,7 @@ class MissionDB(BaseRepo):
         mission = data.copy()
         diff = mission.get('difficulty')
         imp = mission.get('importance')
-        if not (1 < diff < 10) or not (1 < imp < 10):
+        if not (1 <= diff <= 10) or not (1 <= imp <= 10):
             raise ValueError('difficulty and importance must be between 1 - 10') # Rule no. 2
         
         mission['risk_level'] = self.calculate_risk_level(diff, imp) # Rule no. 3
@@ -40,13 +40,14 @@ class MissionDB(BaseRepo):
             raise ValueError('Agent not active') # Rule no. 4
         
         if len(self.get_open_missions_by_agent(a_id)) > 3:
-            raise ValueError('You can assign more than 3 mission to an agent.') # Rule no. 5
+            raise ValueError('You can not assign more than 3 mission to an agent.') # Rule no. 5
         
         mission = self.get_mission_by_id(m_id)
+
         if not mission.get('status') == 'NEW':
             raise ValueError('You can only assign new missions') # Rule no. 7
         if mission.get('risk_level') == 'CRITICAL' and agent.get('agent_rank') != 'Commander':
-            raise ValueError('You can give critical risk level mission only to commander') # Rule no. 6
+            raise ValueError('You can give "critical" - risk level mission, only to commander.') # Rule no. 6
         
         updated = super().update(
             m_id,
