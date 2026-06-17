@@ -1,7 +1,4 @@
-from database.base_db import BaseRepo, ItemNotExists
-
-class AgentNotExists(ItemNotExists):
-    pass
+from database.base_db import BaseRepo
 
 class AgentDB(BaseRepo):
     def __init__(self):
@@ -10,7 +7,7 @@ class AgentDB(BaseRepo):
     def create_agent(self, data: dict):
         ranks = ['Junior', 'Senior', 'Commander']
         if data.get('agent_rank') not in ranks:
-            raise ValueError('Agent rank must be - Junior / Senior / Commander')
+            raise ValueError('Agent rank must be - Junior / Senior / Commander') # Rule no. 1
         new_id = super().create(data)
         return self.get_agent_by_id(new_id)
     
@@ -51,6 +48,7 @@ class AgentDB(BaseRepo):
             cursor.execute(query, (id,))
             conn.commit()
             changed = cursor.rowcount > 0
+        
         if not changed:
             return f'Agent ({id}) completed missions increment failed.'
         return f'Agent ({id}) completed missions successfully increase.'
@@ -67,6 +65,7 @@ class AgentDB(BaseRepo):
             cursor.execute(query, (id,))
             conn.commit()
             changed = cursor.rowcount > 0
+        
         if not changed:
             f'Agent ({id}) failed missions increment failed.'
         return f'Agent ({id}) failed missions successfully increase.'

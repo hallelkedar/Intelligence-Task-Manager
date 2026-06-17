@@ -34,12 +34,14 @@ missions:
 ```
 FIELD              |         TYPE            |   NOTES 
 id                 | INT, AUTO_INCREMENT, PK | Unique id
-name               | VARCHAR(50)             | Name of agent
-specialty          | VARCHAR(30)             | Specialty field
-is_active          | BOOLEAN                 | DEFAULT TRUE
-completed_missions | INT                     | DEFAULT 0
-failed_missions    | INT                     | DEFAULT 0
-agent_rank         | ENUM(Junior, Senior, Commander)
+title              | VARCHAR(50)             | Mission title
+description        | VARCHAR(30)             | Desc details
+location           | VARCHAR(50)             | location
+difficulty         | INT                     | 1 - 10
+importance         | INT                     | 1 - 10
+status             | ENUM(('NEW', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED'))         | DEFAULT 'NEW'
+risk_level         | VARCHAR(30)             | Algoritm (not from user)
+assigned_agent_id  | INT                 | DEFAULT NULL
 ```
 
 ### === Repo classes ===
