@@ -11,11 +11,11 @@ class BaseRepo:
         self.table_name = table_name
         self.conn = db_connection
 
-    def get_all(self) -> list[dict]:
+    def get_all(self) -> list[dict] | list[None]:
         conn = self.conn.get_connection
         with conn.cursor(dictionary=True) as cursor:
             cursor.execute(f'SELECT * FROM {self.table_name}')
-            return cursor.fetchall()
+            return cursor.fetchall() or []
             
         
     def get_by_id(self, item_id: int) -> dict | None:
