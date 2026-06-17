@@ -1,16 +1,6 @@
-from database.base_db import BaseRepo, ItemNotExists, InvalidField
+from database.base_db import BaseRepo, ItemNotExists
 from pydantic import BaseModel
 from typing import Literal
-
-# class Agent(BaseModel):
-#     name: str
-#     specialty: str
-#     agent_rank = Literal['Junior', 'Senior', 'Commander']
-
-# class UpdateAgent(BaseModel):
-#     name: str | None = None
-#     specialty: str | None = None
-#     agent_rank = Literal['Junior', 'Senior', 'Commander'] | None = None
 
 class AgentNotExists(ItemNotExists):
     pass
@@ -20,7 +10,9 @@ class AgentDB(BaseRepo):
         super().__init__(table_name='agents')
 
     def create_agent(self, data: dict):
-        # agent = data.model_dump()
+        ranks = ['Junior', 'Senior', 'Commander']
+        if data.get('agent_rank') not in ranks:
+            raise ValueError('Agent rank must be - Junior / Senior / Commander')
         new_id = super().create(data)
         return self.get_agent_by_id(new_id)
     
@@ -29,13 +21,10 @@ class AgentDB(BaseRepo):
 
     def get_agent_by_id(self, id: int):
         agent = super().get_by_id(id)
-        if not agent:
-            raise AgentNotExists('Agent not found.')
         agent['is_active'] = bool(agent['is_active'])
         return agent
 
     def update_agent(self, id: int, data: dict):
-        # data_dict = data.model_dump(exclude_unset=True)
         self.get_agent_by_id(id)
         
         updated = super().update(id, data)
@@ -91,7 +80,7 @@ class AgentDB(BaseRepo):
             'failed': agent['failed_missions'],
             'total': agent['completed_missions'] + agent['failed_missions'], 
         }
-        agent_performance['success_rate'] = (agent_performance['total'] / agent_performance['completed']) * 100
+        agent_performance['success_rate'] = (agent_performance['completed'] / agent_performance['total']) * 100 if agent_performance['total'] else 0.0
         return agent_performance
     
     def count_active_agents(self):
