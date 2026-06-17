@@ -8,6 +8,7 @@ Manage sql database, crud with mysql connector, help define agents and mission a
 intelligence-task-manager/
 ├── database/
 │   ├── db_connection.py
+│   ├── base_db.py
 │   ├── agent_db.py
 │   └── mission_db.py
 ├── README.md

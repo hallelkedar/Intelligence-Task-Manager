@@ -1,5 +1,11 @@
 from database.db_connection import db_connection
 
+class ItemNotExists(Exception):
+    pass
+
+class InvalidField(Exception):
+    pass
+
 class BaseRepo:
     def __init__(self, table_name):
         self.table_name = table_name
@@ -22,11 +28,11 @@ class BaseRepo:
             cursor.execute(query, (item_id,))
             return cursor.fetchone()
         
-    def create(self, data: dict) -> dict:
+    def create(self, data: dict) -> int:
         conn = self.conn.get_connection
         with conn.cursor(dictionary=True) as cursor:
             keys = ', '.join(data)
-            placeholders = ', '(['%s'] * len(data))
+            placeholders = ', '.join(['%s'] * len(data))
 
             query = f'''
             INSERT INTO {self.table_name}
@@ -36,7 +42,7 @@ class BaseRepo:
 
             cursor.execute(query, params)
             conn.commit()
-            return self.get_by_id(cursor.lastrowid)
+            return cursor.lastrowid
         
     def update(self, item_id: int, data: dict) -> bool:
         conn = self.conn.get_connection
@@ -48,7 +54,7 @@ class BaseRepo:
                 SET {set_clause}
                 WHERE id = %s
                 '''
-            params = list(data) + [item_id]
+            params = list(data.values()) + [item_id]
             cursor.execute(query, params)
             conn.commit()
             return cursor.rowcount > 0

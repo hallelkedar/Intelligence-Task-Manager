@@ -18,7 +18,7 @@ class DB_connection:
 
     @property
     def get_connection(self):
-        if self._connection is None or not self.connection.is_connected():
+        if self._connection is None or not self._connection.is_connected():
             self.connect()
         return self._connection
     
@@ -49,7 +49,7 @@ class DB_connection:
                            loaction VARCHAR(30) NOT NULL,
                            difficulty INT NOT NULL,
                            importance INT NOT NULL,
-                           status ENUM('NEW', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED'),
+                           status ENUM('NEW', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED') DEFAULT NEW,
                            risk_level VARCHAR(50) NOT NULL,
                            assigned_agent_id INT DEFAULT NULL
                            )
