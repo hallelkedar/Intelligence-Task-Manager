@@ -1,6 +1,4 @@
 from database.base_db import BaseRepo, ItemNotExists
-from pydantic import BaseModel
-from typing import Literal
 
 class AgentNotExists(ItemNotExists):
     pass
@@ -24,24 +22,24 @@ class AgentDB(BaseRepo):
         agent['is_active'] = bool(agent['is_active'])
         return agent
 
-    def update_agent(self, id: int, data: dict):
+    def update_agent(self, id: int, data: dict) -> str:
         self.get_agent_by_id(id)
         
         updated = super().update(id, data)
         
         if not updated:
-            return {'msg': f'Agent ({id}) update failed.'}
-        return {'msg': f'Agent ({id}) update successfully.'}
+            return f'Agent ({id}) update failed.'
+        return f'Agent ({id}) update successfully.'
     
-    def deactivate_agent(self, id: int):
+    def deactivate_agent(self, id: int) -> str:
         self.get_agent_by_id(id)
         updated = super().update(id, {'is_active': False})
         
         if not updated:
-            return {'msg': f'Agent ({id}) deactivate failed.'}
-        return {'msg': f'Agent ({id}) deactive successfully.'}
+            return f'Agent ({id}) deactivate failed.'
+        return f'Agent ({id}) deactive successfully.'
 
-    def increment_completed(self, id: int):
+    def increment_completed(self, id: int) -> str:
         self.get_agent_by_id(id)
         conn = self.conn.get_connection
         with conn.cursor(dictionary=True) as cursor:
@@ -54,10 +52,10 @@ class AgentDB(BaseRepo):
             conn.commit()
             changed = cursor.rowcount > 0
         if not changed:
-            return {'msg': f'Agent ({id}) completed missions increment failed.'}
-        return {'msg': f'Agent ({id}) completed missions successfully increase.'}
+            return f'Agent ({id}) completed missions increment failed.'
+        return f'Agent ({id}) completed missions successfully increase.'
 
-    def increment_failed(self, id):
+    def increment_failed(self, id) -> str:
         self.get_agent_by_id(id)
         conn = self.conn.get_connection
         with conn.cursor(dictionary=True) as cursor:
@@ -70,10 +68,10 @@ class AgentDB(BaseRepo):
             conn.commit()
             changed = cursor.rowcount > 0
         if not changed:
-            return {'msg': f'Agent ({id}) failed missions increment failed.'}
-        return {'msg': f'Agent ({id}) failed missions successfully increase.'}
+            f'Agent ({id}) failed missions increment failed.'
+        return f'Agent ({id}) failed missions successfully increase.'
 
-    def get_agent_performance(self, id):
+    def get_agent_performance(self, id) -> dict:
         agent = self.get_agent_by_id(id)
         agent_performance = {
             'completed': agent['completed_missions'],
@@ -83,7 +81,7 @@ class AgentDB(BaseRepo):
         agent_performance['success_rate'] = (agent_performance['completed'] / agent_performance['total']) * 100 if agent_performance['total'] else 0.0
         return agent_performance
     
-    def count_active_agents(self):
+    def count_active_agents(self) -> int:
         conn = self.conn.get_connection
         with conn.cursor(dictionary=True) as cursor:
             query = f'''
@@ -94,3 +92,5 @@ class AgentDB(BaseRepo):
             cursor.execute(query)
             active_agents = cursor.fetchone()['ACTIVE']
             return active_agents if active_agents else 0
+        
+agent_db = AgentDB()

@@ -58,14 +58,3 @@ class BaseRepo:
             cursor.execute(query, params)
             conn.commit()
             return cursor.rowcount > 0
-        
-    def delete(self, item_id: int) -> bool:
-        conn = self.conn.get_connection
-        with conn.cursor(dictionary=True) as cursor:
-            query = f'''
-            DELETE FROM {self.table_name}
-            WHERE id = %s
-            '''
-            cursor.execute(query, (item_id,))
-            conn.commit()
-            return cursor.rowcount > 0
