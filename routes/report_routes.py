@@ -9,6 +9,8 @@ router = APIRouter()
 def get_summery():
     logger.info('Summery dict return to user')
     return {
+        'message': 'Generate report summery.',
+        'data': {
         'active_agents_count': agent_db.count_active_agents(),
         'total_missions': mission_db.count_all_missions(),
         'open_missions': mission_db.count_open_missions(),
@@ -16,19 +18,25 @@ def get_summery():
         'failed_missions': mission_db.count_by_status(status='FAILED'),
         'critical_missions': mission_db.count_critical_missions()
     }
+    }
 
 @router.get('/missions-by-status')
 def get_mission_by_status():
     logger.info('Mission by status dict return to user')
     return {
+        'message': 'Generate mission by status report',
+        'data': {
         'open': mission_db.count_open_missions(),
         'in_progress': mission_db.count_by_status(status='IN_PROGRESS'),
         'completed': mission_db.count_by_status(status='COMPLETED'),
         'failed': mission_db.count_by_status(status='FAILED'),
         'critical': mission_db.count_critical_missions()
     }
+    }
 
 @router.get('/top-agent')
 def get_top_agent():
     logger.info('Top agent dict dict return to user')
-    return mission_db.get_top_agent()
+    return {'message': 'Generate top agent',
+            'data': mission_db.get_top_agent()
+    }

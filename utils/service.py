@@ -20,14 +20,14 @@ def handle_create_agent(data: dict):
         raise HTTPException(400, 'Agent rank must be - Junior / Senior / Commander')
     return agent_db.create_agent(data)
 
-def handle_create_mission(data: dict) -> int:
+def handle_create_mission(data: dict) -> dict:
     mission = data.copy()
     diff = mission.get('difficulty')
     imp = mission.get('importance')
     if not (1 <= diff <= 10) or not (1 <= imp <= 10):
         raise HTTPException(400, 'difficulty and importance must be between 1 - 10')
     new_mission = mission_db.create_mission(mission)
-    return new_mission['id']
+    return new_mission
 
 def handle_assign_mission(m_id: int, a_id: int):
     mission = get_mission(m_id)
