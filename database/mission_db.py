@@ -55,7 +55,8 @@ class MissionDB(BaseRepo):
         logger.info(f'Assigning mission ({m_id}) to agent ({a_id})')
         updated = super().update(
             m_id,
-            {'assigned_agent_id': a_id}
+            {'assigned_agent_id': a_id,
+            'status': 'ASSIGNED'}
             )
         if not updated:
             return f'Mission ({m_id}) assign failed. (agent id: {a_id})'
@@ -65,6 +66,8 @@ class MissionDB(BaseRepo):
     def update_mission_status(self, id: int, status: str) -> str:
         mission = self.get_mission_by_id(id)
         old_status = mission.get('status')
+
+        increment = 'not yet'
 
         if status == 'IN_PROGRESS' and old_status != 'ASSIGNED':
             raise BusinessValidationError('You can only start mission that assigned to agent') # Rule no. 8
@@ -87,7 +90,7 @@ class MissionDB(BaseRepo):
             )
         if not updated:
             return f'Mission status ({id}-{status}) update failed.'
-        return f'Mission status ({id}-{status}) updated successfully. (complete: {increment})'
+        return f'Mission status ({id}-{status}) updated successfully. (Finished: {increment})'
 
     def get_open_missions_by_agent(self, id: int) -> list[dict] | list[None]:
         query = f'''

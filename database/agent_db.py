@@ -15,8 +15,11 @@ class AgentDB(BaseRepo):
     
     def get_all_agents(self):
         logger.info('Getting all agents')
-        return super().get_all()
-
+        all_agents = super().get_all()
+        for agent in all_agents.copy():
+            agent['is_active'] = bool(agent['is_active'])
+        return all_agents
+    
     def get_agent_by_id(self, id: int):
         logger.info(f'Getting user by id: {id}')
         agent = super().get_by_id(id)
