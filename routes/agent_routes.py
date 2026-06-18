@@ -73,8 +73,6 @@ def deactivate_agent(id: int):
 @router.get('/{id}/performance')
 def get_agent_performance(id: int):
     service.get_agent(id)
-    update_msg = agent_db.get_agent_performance(id)
-    logger.info(update_msg)
-    
-    return {'message': update_msg
+    logger.info('Return agent performance report')
+    return {'data': agent_db.get_agent_performance(id)
             }

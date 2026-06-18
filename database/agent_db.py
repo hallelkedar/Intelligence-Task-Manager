@@ -38,7 +38,9 @@ class AgentDB(BaseRepo):
         return f'Agent ({id}) update successfully.'
     
     def deactivate_agent(self, id: int) -> str:
-        self.get_agent_by_id(id)
+        agent = self.get_agent_by_id(id)
+        if not agent['is_active']:
+            return f'Agent ({id}) is already not active.'
         logger.info(f'Deactive user: {id}')
         updated = super().update(id, {'is_active': False})
         
@@ -83,7 +85,8 @@ class AgentDB(BaseRepo):
             'failed': agent['failed_missions'],
             'total': agent['completed_missions'] + agent['failed_missions'], 
         }
-        agent_performance['success_rate'] = (agent_performance['completed'] / agent_performance['total']) * 100 if agent_performance['total'] else 0.0
+        sucess_rate = (agent_performance['completed'] / agent_performance['total']) * 100 if agent_performance['total'] else 0.0
+        agent_performance['success_rate'] = float("{:.2f}".format(round(sucess_rate, 2)))
         return agent_performance
     
     def count_active_agents(self) -> int:

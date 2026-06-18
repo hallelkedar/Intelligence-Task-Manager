@@ -26,10 +26,10 @@ async def middelware(req: Request, call_next):
 
 @app.exception_handler(HTTPException)
 def http_exception(req: Request, e: HTTPException):
-    logger.error(f'{e.detail['detail']}: {e.detail['detail_id']}')
+    logger.error(e.detail)
     return JSONResponse(
         status_code=e.status_code,
-        content={'detail': e.detail['detail']}
+        content={'detail': e.detail}
     )
 
 app.include_router(agent_router, prefix='/agents')

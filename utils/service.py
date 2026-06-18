@@ -42,27 +42,21 @@ def handle_assign_mission(m_id: int, a_id: int):
     agent = get_agent(a_id)
     
     if not mission.get('status') == 'NEW':
-        raise HTTPException(404, detail={
-            'detail': 'Mission not available',
-            'detail_id': m_id,
-        }
+        raise HTTPException(404,
+                             f'Mission not available: (id: {m_id}'
         )
     if not agent.get('is_active'):
-        raise HTTPException(404, detail={
-            'detail': 'Agent is not active',
-            'detail_id': a_id,
-        }
+        raise HTTPException(404,
+                             f'Agent is not active: (id: {a_id}'
         )
+    
     if len(mission_db.get_open_missions_by_agent(a_id)) >= 3:
-        raise HTTPException(400, detail={
-            'detail': 'Agent has reached maximum missions',
-            'detail_id': a_id,
-        }
+        raise HTTPException(404,
+                             f'Agent has reached maximum missions: (id: {a_id}'
         )
     if mission.get('risk_level') == 'CRITICAL' and agent.get('agent_rank') != 'Commander':
-        raise HTTPException(404, detail={
-            'detail': 'Only Commander can handle critical missions',
-            'detail_id': a_id,
-        }
+        raise HTTPException(404,
+                             f'Only Commander can handle critical missions: (id: {a_id}'
         )
+
     return mission_db.assign_mission(m_id, a_id)
