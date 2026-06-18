@@ -1,4 +1,4 @@
-from database.base_db import BaseRepo, ResourceNotFoundError, BusinessValidationError
+from database.base_db import BaseRepo, BusinessValidationError
 from database.agent_db import agent_db
 from logs.logger_config import logger
 
@@ -83,7 +83,7 @@ class MissionDB(BaseRepo):
                     increment = agent_db.increment_completed(mission.get('assigned_agent_id'))
                 else:
                     increment = agent_db.increment_failed(mission.get('assigned_agent_id'))
-                    
+
         logger.info(f'Updating status - {old_status} to {status} (id: {id})')
         updated = super().update(
             id,

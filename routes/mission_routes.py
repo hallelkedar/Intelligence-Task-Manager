@@ -54,7 +54,7 @@ def start_mission(id: int):
     mission = service.get_mission(id)
 
     if mission['status'] != 'ASSIGNED':
-        raise HTTPException(400, 'You can only start mission that assigned to agent')
+        raise HTTPException(400, 'You can only start mission that assigned to agent and did not start')
         
     update_msg = mission_db.update_mission_status(id, status='IN_PROGRESS')
     logger.info(update_msg)

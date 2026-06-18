@@ -1,4 +1,4 @@
-from database.base_db import BaseRepo, ResourceNotFoundError, BusinessValidationError
+from database.base_db import BaseRepo, BusinessValidationError
 from logs.logger_config import logger
 
 class AgentDB(BaseRepo):

@@ -41,19 +41,6 @@ def handle_assign_mission(m_id: int, a_id: int):
     mission = get_mission(m_id)
     agent = get_agent(a_id)
     
-    if not mission:
-        raise HTTPException(404, detail={
-            'detail': 'Mission not found',
-            'detail_id': m_id,
-        }
-        )
-    if not agent:
-        raise HTTPException(404, detail={
-            'detail': 'Agent not found',
-            'detail_id': a_id,
-        }
-        )
-    
     if not mission.get('status') == 'NEW':
         raise HTTPException(404, detail={
             'detail': 'Mission not available',
@@ -67,7 +54,7 @@ def handle_assign_mission(m_id: int, a_id: int):
         }
         )
     if len(mission_db.get_open_missions_by_agent(a_id)) >= 3:
-        raise HTTPException(404, detail={
+        raise HTTPException(400, detail={
             'detail': 'Agent has reached maximum missions',
             'detail_id': a_id,
         }
