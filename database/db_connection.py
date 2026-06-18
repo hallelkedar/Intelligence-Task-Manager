@@ -1,4 +1,5 @@
 import mysql.connector
+from logs.logger_config import logger
 
 class DB_connection:
     def __init__(self, host, user, password):
@@ -22,11 +23,14 @@ class DB_connection:
         return self._connection
     
     def create_database(self):
+        logger.info('Create database if not exsits')
         with self._connection.cursor() as cursor:
             cursor.execute('CREATE DATABASE IF NOT EXISTS Intelligence_db')
             cursor.execute('USE Intelligence_db')
 
     def create_tables(self):
+        logger.info('Create tables (agents, missions) if not exsits')
+        
         with self._connection.cursor() as cursor:
             cursor.execute('''
                            CREATE TABLE IF NOT EXISTS agents (

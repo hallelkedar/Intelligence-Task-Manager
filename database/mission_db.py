@@ -1,5 +1,6 @@
 from database.base_db import BaseRepo, ResourceNotFoundError, BusinessValidationError
 from database.agent_db import agent_db
+from logs.logger_config import logger
 
 class MissionDB(BaseRepo):
     def __init__(self):
@@ -24,13 +25,16 @@ class MissionDB(BaseRepo):
             raise BusinessValidationError('difficulty and importance must be between 1 - 10') # Rule no. 2
         
         mission['risk_level'] = self.calculate_risk_level(diff, imp) # Rule no. 3
+        logger.info('Generate new mission')
         new_id = super().create(mission)
         return self.get_mission_by_id(new_id)
     
     def get_all_missions(self):
+        logger.info('Getting all missions')
         return super().get_all()
 
     def get_mission_by_id(self, id: int):
+        logger.info(f'Getting agent by id: {id}')
         return super().get_by_id(id)
 
     def assign_mission(self, m_id: int, a_id: int) -> str:
@@ -48,7 +52,7 @@ class MissionDB(BaseRepo):
             raise BusinessValidationError('You can only assign new missions') # Rule no. 7
         if mission.get('risk_level') == 'CRITICAL' and agent.get('agent_rank') != 'Commander':
             raise BusinessValidationError('You can give "critical" - risk level mission, only to commander.') # Rule no. 6
-        
+        logger.info(f'Assigning mission ({m_id}) to agent ({a_id})')
         updated = super().update(
             m_id,
             {'assigned_agent_id': a_id}
@@ -76,7 +80,7 @@ class MissionDB(BaseRepo):
                     increment = agent_db.increment_completed(mission.get('assigned_agent_id'))
                 else:
                     increment = agent_db.increment_failed(mission.get('assigned_agent_id'))
-        
+        logger.info(f'Updating status - {old_status} to {status} (id: {id})')
         updated = super().update(
             id,
             {'status': status}

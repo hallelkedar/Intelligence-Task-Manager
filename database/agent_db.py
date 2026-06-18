@@ -1,4 +1,5 @@
 from database.base_db import BaseRepo, ResourceNotFoundError, BusinessValidationError
+from logs.logger_config import logger
 
 class AgentDB(BaseRepo):
     def __init__(self):
@@ -8,13 +9,16 @@ class AgentDB(BaseRepo):
         ranks = ['Junior', 'Senior', 'Commander']
         if data.get('agent_rank') not in ranks:
             raise BusinessValidationError('Agent rank must be - Junior / Senior / Commander') # Rule no. 1
+        logger.info('Generate new agent')
         new_id = super().create(data)
         return self.get_agent_by_id(new_id)
     
     def get_all_agents(self):
+        logger.info('Getting all agents')
         return super().get_all()
 
     def get_agent_by_id(self, id: int):
+        logger.info(f'Getting user by id: {id}')
         agent = super().get_by_id(id)
         if not agent:
             return None
@@ -23,7 +27,7 @@ class AgentDB(BaseRepo):
 
     def update_agent(self, id: int, data: dict) -> str:
         self.get_agent_by_id(id)
-        
+        logger.info(f'Updating user: {id}')
         updated = super().update(id, data)
         
         if not updated:
@@ -32,6 +36,7 @@ class AgentDB(BaseRepo):
     
     def deactivate_agent(self, id: int) -> str:
         self.get_agent_by_id(id)
+        logger.info(f'Deactive user: {id}')
         updated = super().update(id, {'is_active': False})
         
         if not updated:
@@ -40,16 +45,14 @@ class AgentDB(BaseRepo):
 
     def increment_completed(self, id: int) -> str:
         self.get_agent_by_id(id)
-        conn = self.conn.get_connection
-        with conn.cursor(dictionary=True) as cursor:
-            query = f'''
-                UPDATE {self.table_name}
-                SET completed_missions = completed_missions + 1
-                WHERE id = %s
-                '''
-            cursor.execute(query, (id,))
-            conn.commit()
-            changed = cursor.rowcount > 0
+        logger.info(f'Up agent mission completed +1: {id}')
+        query = f'''
+            UPDATE {self.table_name}
+            SET completed_missions = completed_missions + 1
+            WHERE id = %s
+            '''
+        result = self.execute_query(query, (id,), is_change=True)
+        changed = result['row_count'] > 0
         
         if not changed:
             return f'Agent ({id}) completed missions increment failed.'
@@ -57,7 +60,7 @@ class AgentDB(BaseRepo):
 
     def increment_failed(self, id) -> str:
         self.get_agent_by_id(id)
-        
+        logger.info(f'Up agent mission failed +1: {id}')
         query = f'''
             UPDATE {self.table_name}
             SET failed_missions = failed_missions + 1
