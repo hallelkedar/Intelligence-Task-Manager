@@ -2,6 +2,8 @@ from database.mission_db import mission_db
 from database.agent_db import agent_db
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from database.base_db import BusinessValidationError
+from utils import service
 
 router = APIRouter()
 
@@ -12,10 +14,11 @@ class Mission(BaseModel):
     difficulty: int
     importance: int
 
-@router.post('')
+@router.post('', status_code=201)
 def create_mission(data: Mission):
     mission = data.model_dump()
-    return mission_db.create_mission(mission)
+    new_id = service.handle_create_mission(mission)
+    return {'detail': f'Mission created successfully. (id: {new_id})'}
 
 @router.get('')
 def get_all_missions():
@@ -23,41 +26,50 @@ def get_all_missions():
 
 @router.get('/{id}')
 def get_mission(id: int):
-    return mission_db.get_mission_by_id(id)
+    mission = service.get_mission(id)
+    return mission
 
 @router.put('/{id}/assign/{agent_id}')
 def assign_mission(id: int, agent_id: int):
-    
-    mission = mission_db.get_mission_by_id(id)
-    agent = agent_db.get_agent_by_id(id)
-    
-    if not mission:
-        raise HTTPException(404, 'Mission not found')
-    if not agent:
-        raise HTTPException(404, 'Agent not found')
-    if not mission.get('status') == 'NEW':
-        raise HTTPException(400, 'Mission not available')
-    if not agent.get('is_active'):
-        raise HTTPException(400, 'Agent is not active')
-    if len(mission_db.get_open_missions_by_agent(agent_id)) >= 3:
-        raise HTTPException(400, 'Agent has reached maximum missions')
-    if mission.get('risk_level') == 'CRITICAL' and agent.get('agent_rank') != 'Commander':
-        raise HTTPException(400, 'Only Commander can handle critical missions')
-    
-    return mission_db.assign_mission(id, agent_id)
+    assign_msg = service.handle_assign_mission(id, agent_id)
+    return {'detail': assign_msg}
 
 @router.put('/{id}/start')
 def start_mission(id: int):
-    return mission_db.update_mission_status(id, status='IN_PROGRESS')
+    mission = service.get_mission(id)
+
+    if mission['status'] != 'ASSIGNED':
+        raise HTTPException(400, 'You can only start mission that assigned to agent') # Rule no. 8
+        
+    update_msg = mission_db.update_mission_status(id, status='IN_PROGRESS')
+    return {'detail': update_msg}
 
 @router.put('/{id}/complete')
 def mission_complete(id: int):
-    return mission_db.update_mission_status(id, status='COMPLETED')
+    mission = service.get_mission(id)
+
+    if mission['status'] != 'IN_PROGRESS':
+        raise HTTPException(400, 'You can only finish mission in progress')
+    
+    update_msg = mission_db.update_mission_status(id, status='COMPLETED')
+    return {'detail': update_msg}
 
 @router.put('/{id}/fail')
 def mission_failed(id: int):
-    return mission_db.update_mission_status(id, status='FAILED')
+    mission = service.get_mission(id)
+    
+    if mission['status'] != 'IN_PROGRESS':
+        raise HTTPException(400, 'You can only finish mission in progress')
+    
+    update_msg = mission_db.update_mission_status(id, status='FAILED')
+    return {'detail': update_msg}
 
 @router.put('/{id}/cancel')
 def mission_canceled(id: int):
-    return mission_db.update_mission_status(id, status='CANCELLED')
+    mission = service.get_mission(id)
+    
+    if mission['status'] not in ['NEW', 'ASSIGNED']:
+        raise HTTPException(400, 'You can only cancel mission that did not start')
+    
+    update_msg = mission_db.update_mission_status(id, status='CANCELLED')
+    return {'detail': update_msg}
