@@ -9,10 +9,12 @@ from fastapi.responses import JSONResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info('Server up, open connection')
     db_connection.create_database()
     db_connection.create_tables()
     yield
     db_connection.close()
+    logger.info('Server down')
 
 app = FastAPI(lifespan=lifespan)
 

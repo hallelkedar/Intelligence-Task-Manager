@@ -61,6 +61,7 @@ class DB_connection:
 
     def close(self):
         if self._connection:
+            logger.info('Close connection')
             self._connection.close()
 
 db_connection = DB_connection(
