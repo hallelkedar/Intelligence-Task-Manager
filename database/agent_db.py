@@ -9,7 +9,7 @@ class AgentDB(BaseRepo):
         ranks = ['Junior', 'Senior', 'Commander']
         if data.get('agent_rank') not in ranks:
             raise BusinessValidationError('Agent rank must be - Junior / Senior / Commander') # Rule no. 1
-        logger.info('Generate new agent')
+        logger.info('Generating new agent')
         new_id = super().create(data)
         return self.get_agent_by_id(new_id)
     

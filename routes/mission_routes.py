@@ -29,7 +29,7 @@ def create_mission(data: Mission):
 @router.get('')
 def get_all_missions():
     logger.info('Return all missions to user successfully.')
-    return {'message': 'Return all missions',
+    return {
             'data': mission_db.get_all_missions()
     }
 
@@ -38,7 +38,7 @@ def get_mission(id: int):
     mission = service.get_mission(id)
     
     logger.info(f'Mission (id: {id} return to user succeffully.)')
-    return {'message': f'Return mission (id: {id})',
+    return {
             'data': mission
     }
 
@@ -46,8 +46,7 @@ def get_mission(id: int):
 def assign_mission(id: int, agent_id: int):
     assign_msg = service.handle_assign_mission(id, agent_id)
     logger.info(assign_msg)
-    return {'message': assign_msg,
-            'data': None
+    return {'message': assign_msg
             }
 
 @router.put('/{id}/start')
@@ -59,8 +58,7 @@ def start_mission(id: int):
         
     update_msg = mission_db.update_mission_status(id, status='IN_PROGRESS')
     logger.info(update_msg)
-    return {'message': update_msg,
-            'data': None
+    return {'message': update_msg
             }
 
 @router.put('/{id}/complete')
@@ -73,8 +71,7 @@ def mission_complete(id: int):
     update_msg = mission_db.update_mission_status(id, status='COMPLETED')
     
     logger.info(update_msg)
-    return {'message': update_msg,
-            'data': None
+    return {'message': update_msg
             }
 
 @router.put('/{id}/fail')
@@ -87,8 +84,7 @@ def mission_failed(id: int):
     update_msg = mission_db.update_mission_status(id, status='FAILED')
     
     logger.info(update_msg)
-    return {'message': update_msg,
-            'data': None
+    return {'message': update_msg
             }
 @router.put('/{id}/cancel')
 def mission_canceled(id: int):
@@ -100,6 +96,5 @@ def mission_canceled(id: int):
     update_msg = mission_db.update_mission_status(id, status='CANCELLED')
     
     logger.info(update_msg)
-    return {'message': update_msg,
-            'data': None
+    return {'message': update_msg
             }

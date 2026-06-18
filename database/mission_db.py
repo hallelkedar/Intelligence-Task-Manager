@@ -25,7 +25,7 @@ class MissionDB(BaseRepo):
             raise BusinessValidationError('difficulty and importance must be between 1 - 10') # Rule no. 2
         
         mission['risk_level'] = self.calculate_risk_level(diff, imp) # Rule no. 3
-        logger.info('Generate new mission')
+        logger.info('Generating new mission')
         new_id = super().create(mission)
         return self.get_mission_by_id(new_id)
     
@@ -83,6 +83,7 @@ class MissionDB(BaseRepo):
                     increment = agent_db.increment_completed(mission.get('assigned_agent_id'))
                 else:
                     increment = agent_db.increment_failed(mission.get('assigned_agent_id'))
+                    
         logger.info(f'Updating status - {old_status} to {status} (id: {id})')
         updated = super().update(
             id,

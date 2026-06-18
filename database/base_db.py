@@ -1,8 +1,5 @@
 from database.db_connection import db_connection
 
-class ResourceNotFoundError(Exception):
-    pass
-
 class BusinessValidationError(Exception):
     pass
 
