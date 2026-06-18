@@ -5,13 +5,21 @@ from fastapi import HTTPException
 def get_agent(id: int) -> dict:
     agent = agent_db.get_agent_by_id(id)
     if not agent:
-        raise HTTPException(404, f'Agent not found: {id}')
+        raise HTTPException(404, detail={
+            'detail': 'Agent not found',
+            'detail_id': id,
+        }
+        )
     return agent
 
 def get_mission(id: int) -> dict:
     mission = mission_db.get_mission_by_id(id)
     if not mission:
-        raise HTTPException(404, f'Mission not found: {id}')
+        raise HTTPException(404, detail={
+            'detail': 'Mission not found',
+            'detail_id': id,
+        }
+        )
     return mission
 
 def handle_create_agent(data: dict):
@@ -34,17 +42,40 @@ def handle_assign_mission(m_id: int, a_id: int):
     agent = get_agent(a_id)
     
     if not mission:
-        raise HTTPException(404, f'Mission not found: {m_id}')
+        raise HTTPException(404, detail={
+            'detail': 'Mission not found',
+            'detail_id': m_id,
+        }
+        )
     if not agent:
-        raise HTTPException(404, f'Agent not found: {a_id}')
+        raise HTTPException(404, detail={
+            'detail': 'Agent not found',
+            'detail_id': a_id,
+        }
+        )
     
     if not mission.get('status') == 'NEW':
-        raise HTTPException(400, f'Mission not available: {m_id}')
+        raise HTTPException(404, detail={
+            'detail': 'Mission not available',
+            'detail_id': m_id,
+        }
+        )
     if not agent.get('is_active'):
-        raise HTTPException(400, f'Agent is not active: {a_id}')
+        raise HTTPException(404, detail={
+            'detail': 'Agent is not active',
+            'detail_id': a_id,
+        }
+        )
     if len(mission_db.get_open_missions_by_agent(a_id)) >= 3:
-        raise HTTPException(400, f'Agent has reached maximum missions: {a_id}')
+        raise HTTPException(404, detail={
+            'detail': 'Agent has reached maximum missions',
+            'detail_id': a_id,
+        }
+        )
     if mission.get('risk_level') == 'CRITICAL' and agent.get('agent_rank') != 'Commander':
-        raise HTTPException(400, f'Only Commander can handle critical missions: {a_id}')
-    
+        raise HTTPException(404, detail={
+            'detail': 'Only Commander can handle critical missions',
+            'detail_id': a_id,
+        }
+        )
     return mission_db.assign_mission(m_id, a_id)
