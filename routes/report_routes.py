@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 from database.agent_db import agent_db
 from database.mission_db import mission_db
-from typing import Literal
+from logs.logger_config import logger
 
 router = APIRouter()
 
 @router.get('/summary')
 def get_summery():
+    logger.info('Summery dict return to user')
     return {
         'active_agents_count': agent_db.count_active_agents(),
         'total_missions': mission_db.count_all_missions(),
@@ -17,7 +18,8 @@ def get_summery():
     }
 
 @router.get('/missions-by-status')
-def get_mission_by_status(status: Literal['NEW', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED']):
+def get_mission_by_status():
+    logger.info('Mission by status dict return to user')
     return {
         'open': mission_db.count_open_missions(),
         'in_progress': mission_db.count_by_status(status='IN_PROGRESS'),
@@ -28,4 +30,5 @@ def get_mission_by_status(status: Literal['NEW', 'ASSIGNED', 'IN_PROGRESS', 'COM
 
 @router.get('/top-agent')
 def get_top_agent():
+    logger.info('Top agent dict dict return to user')
     return mission_db.get_top_agent()

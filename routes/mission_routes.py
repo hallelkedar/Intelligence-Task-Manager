@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from database.base_db import BusinessValidationError
 from utils import service
+from logs.logger_config import logger
 
 router = APIRouter()
 
@@ -18,20 +19,27 @@ class Mission(BaseModel):
 def create_mission(data: Mission):
     mission = data.model_dump()
     new_id = service.handle_create_mission(mission)
-    return {'detail': f'Mission created successfully. (id: {new_id})'}
+    created_msg = f'Mission created successfully. (id: {new_id})'
+    
+    logger.info(created_msg)
+    return {'detail': created_msg}
 
 @router.get('')
 def get_all_missions():
+    logger.info('Return all missions to user successfully.')
     return mission_db.get_all_missions()
 
 @router.get('/{id}')
 def get_mission(id: int):
     mission = service.get_mission(id)
+    
+    logger.info(f'Mission (id: {id} return to user succeffully.)')
     return mission
 
 @router.put('/{id}/assign/{agent_id}')
 def assign_mission(id: int, agent_id: int):
     assign_msg = service.handle_assign_mission(id, agent_id)
+    logger.info(assign_msg)
     return {'detail': assign_msg}
 
 @router.put('/{id}/start')
@@ -42,6 +50,7 @@ def start_mission(id: int):
         raise HTTPException(400, 'You can only start mission that assigned to agent') # Rule no. 8
         
     update_msg = mission_db.update_mission_status(id, status='IN_PROGRESS')
+    logger.info(update_msg)
     return {'detail': update_msg}
 
 @router.put('/{id}/complete')
@@ -52,6 +61,8 @@ def mission_complete(id: int):
         raise HTTPException(400, 'You can only finish mission in progress')
     
     update_msg = mission_db.update_mission_status(id, status='COMPLETED')
+    
+    logger.info(update_msg)
     return {'detail': update_msg}
 
 @router.put('/{id}/fail')
@@ -62,6 +73,8 @@ def mission_failed(id: int):
         raise HTTPException(400, 'You can only finish mission in progress')
     
     update_msg = mission_db.update_mission_status(id, status='FAILED')
+    
+    logger.info(update_msg)
     return {'detail': update_msg}
 
 @router.put('/{id}/cancel')
@@ -72,4 +85,6 @@ def mission_canceled(id: int):
         raise HTTPException(400, 'You can only cancel mission that did not start')
     
     update_msg = mission_db.update_mission_status(id, status='CANCELLED')
+    
+    logger.info(update_msg)
     return {'detail': update_msg}

@@ -23,15 +23,21 @@ router = APIRouter()
 @router.post('', status_code=201)
 def create_agent(data: Agent):
     agent = data.model_dump()
-    return service.handle_create_agent(agent)
+    new_agent = service.handle_create_agent(agent)
+    created_msg = f'New agent created successfully. (id: {new_agent['id']})'
+    logger.info(created_msg)
+    return {'detail': created_msg}
 
 @router.get('')
 def get_all_agents():
+    logger.info('Return all agents to user successfully.')
     return agent_db.get_all_agents()
 
 @router.get('/{id}')
 def get_agent(id: int):
-    return service.get_agent(id)
+    agent = service.get_agent(id)
+    logger.info(f'Agent (id: {id} return to user succeffully.)')
+    return agent
 
 @router.put('/{id}')
 def update_agent(id: int, data: UpdateAgent):
@@ -46,14 +52,22 @@ def update_agent(id: int, data: UpdateAgent):
     
     if not update_msg:
         raise HTTPException(500, 'Internal server error')
+    logger.info(update_msg)
     return {'detail': update_msg}
 
 @router.put('/{id}/deactivate')
 def deactivate_agent(id: int):
     service.get_agent(id)
-    return agent_db.deactivate_agent(id)
+    update_msg = agent_db.deactivate_agent(id)
+    logger.info(update_msg)
+    
+    return {'detail': update_msg}
+    
 
 @router.get('/{id}/performance')
 def get_agent_performance(id: int):
     service.get_agent(id)
-    return agent_db.get_agent_performance(id)
+    update_msg = agent_db.get_agent_performance(id)
+    logger.info(update_msg)
+    
+    return {'detail': update_msg}
