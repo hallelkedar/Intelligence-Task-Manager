@@ -16,7 +16,6 @@ class DB_connection:
             password=self.password
         )
 
-    @property
     def get_connection(self):
         if self._connection is None or not self._connection.is_connected():
             self.connect()

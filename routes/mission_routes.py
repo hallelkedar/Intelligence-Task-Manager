@@ -1,7 +1,7 @@
 from database.mission_db import mission_db
-from fastapi import APIRouter
+from database.agent_db import agent_db
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Literal
 
 router = APIRouter()
 
@@ -11,13 +11,6 @@ class Mission(BaseModel):
     location: str
     difficulty: int
     importance: int
-
-class MissionUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    location: str | None = None
-    difficulty: int | None = None
-    importance: int | None = None
 
 @router.post('')
 def create_mission(data: Mission):
@@ -34,6 +27,23 @@ def get_mission(id: int):
 
 @router.put('/{id}/assign/{agent_id}')
 def assign_mission(id: int, agent_id: int):
+    
+    mission = mission_db.get_mission_by_id(id)
+    agent = agent_db.get_agent_by_id(id)
+    
+    if not mission:
+        raise HTTPException(404, 'Mission not found')
+    if not agent:
+        raise HTTPException(404, 'Agent not found')
+    if not mission.get('status') == 'NEW':
+        raise HTTPException(400, 'Mission not available')
+    if not agent.get('is_active'):
+        raise HTTPException(400, 'Agent is not active')
+    if len(mission_db.get_open_missions_by_agent(agent_id)) >= 3:
+        raise HTTPException(400, 'Agent has reached maximum missions')
+    if mission.get('risk_level') == 'CRITICAL' and agent.get('agent_rank') != 'Commander':
+        raise HTTPException(400, 'Only Commander can handle critical missions')
+    
     return mission_db.assign_mission(id, agent_id)
 
 @router.put('/{id}/start')

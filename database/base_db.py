@@ -1,60 +1,70 @@
 from database.db_connection import db_connection
 
-class ItemNotExists(Exception):
+class ResourceNotFoundError(Exception):
     pass
 
-class InvalidField(Exception):
+class BusinessValidationError(Exception):
     pass
 
 class BaseRepo:
     def __init__(self, table_name):
         self.table_name = table_name
-        self.conn = db_connection
+        self.db = db_connection
 
-    def get_all(self) -> list[dict] | list[None]:
-        conn = self.conn.get_connection
+    def execute_query(self, query: str, params: tuple = None, is_change: bool = False, fetch_all: bool = True):
+        conn = self.db.get_connection()
         with conn.cursor(dictionary=True) as cursor:
-            cursor.execute(f'SELECT * FROM {self.table_name}')
-            return cursor.fetchall() or []
+            cursor.execute(query, params or ())
+
+            if is_change:
+                conn.commit()
+                return {
+                    'row_count': cursor.rowcount,
+                    'last_id': cursor.lastrowid
+                }
+            
+            if fetch_all:
+                return cursor.fetchall() or []
+            return cursor.fetchone()
+        
+    def get_all(self) -> list[dict] | list[None]:
+        query = f'SELECT * FROM {self.table_name}'
+        result = self.execute_query(query)
+        return result
             
         
     def get_by_id(self, item_id: int) -> dict | None:
-        conn = self.conn.get_connection
-        with conn.cursor(dictionary=True) as cursor:
-            query = f'''
-                SELECT * FROM {self.table_name}
-                WHERE id = %s
-                '''
-            cursor.execute(query, (item_id,))
-            return cursor.fetchone()
+
+        query = f'''
+            SELECT * FROM {self.table_name}
+            WHERE id = %s
+            '''
+        result = self.execute_query(query, (item_id,), fetch_all=False)
+        return result
         
     def create(self, data: dict) -> int:
-        conn = self.conn.get_connection
-        with conn.cursor(dictionary=True) as cursor:
-            keys = ', '.join(data)
-            placeholders = ', '.join(['%s'] * len(data))
+        keys = ', '.join(data)
+        placeholders = ', '.join(['%s'] * len(data))
 
-            query = f'''
-            INSERT INTO {self.table_name}
-            ({keys}) VALUES ({placeholders})
-            '''
-            params = tuple(data.values())
+        query = f'''
+        INSERT INTO {self.table_name}
+        ({keys}) VALUES ({placeholders})
+        '''
+        params = tuple(data.values())
 
-            cursor.execute(query, params)
-            conn.commit()
-            return cursor.lastrowid
+        result = self.execute_query(query, params, is_change=True)
+        return result['last_id']
         
     def update(self, item_id: int, data: dict) -> bool:
-        conn = self.conn.get_connection
-        with conn.cursor(dictionary=True) as cursor:
-            set_clause = ', '.join([f'{key} = %s' for key in data.keys()])
+        
+        set_clause = ', '.join([f'{key} = %s' for key in data.keys()])
 
-            query = f'''
-                UPDATE {self.table_name}
-                SET {set_clause}
-                WHERE id = %s
-                '''
-            params = list(data.values()) + [item_id]
-            cursor.execute(query, params)
-            conn.commit()
-            return cursor.rowcount > 0
+        query = f'''
+            UPDATE {self.table_name}
+            SET {set_clause}
+            WHERE id = %s
+            '''
+        params = list(data.values()) + [item_id]
+        result = self.execute_query(query, params, is_change=True)
+        
+        return result['row_count'] > 0
