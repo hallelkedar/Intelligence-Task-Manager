@@ -6,11 +6,21 @@ Manage sql database, crud with mysql connector, help define agents and mission a
 ### Project Structure:
 ```
 intelligence-task-manager/
+├── main.py
 ├── database/
 │   ├── db_connection.py
 │   ├── base_db.py
 │   ├── agent_db.py
 │   └── mission_db.py
+├── routes/
+│   ├── agent_routes.py
+│   ├── mission_routes.py
+│   └── reports_routes.py
+├── utils/
+│   └── service.py
+├── logs/
+│   ├── app.log
+│   └── logger_config.py
 ├── README.md
 ├── requirements.txt
 └── .gitignore
@@ -96,6 +106,41 @@ get_top_agent() - Return agent with highest completed_missions
 9. Mission can be close - only if status=IN_PROGRESS (change to FAILED or COMPLETED)
 10. Mission can be cancled - only if status=NEW/status=ASSIGNED
 
+### === EndPoints ===
+Agent route:
+```
+METHODS     |    ENDPOINT             |   DESCRIPTION
+post        | /agents                 | Create new agent
+get         | /agents                 | Get all agents
+get         | /agents/{id}            | Get agent by id
+put         | /agents/{id}            | Update agent
+put         | /agents/{id}/deactivate | Deactive agent
+get         | /agents/{id}/performance| Get agent performance
+```
+
+Mission route:
+```
+METHODS     |    ENDPOINT                      |   DESCRIPTION
+post        | /missions                        | Create new mission
+get         | /missions                        | Get all missions
+get         | /missions/{id}                   | Get mission by id
+put         | /missions/{id}/assign/{agent_id} | Assign mission to agent
+put         | /missions/{id}/start             | Start mission
+put         | /missions/{id}/complete          | Finish mission - complete
+put         | /missions/{id}/fail              | Finish mission - fail
+put         | /missions/{id}/cancel            | Cancel mission
+```
+Reports route:
+```
+METHODS     |    ENDPOINT                      |   DESCRIPTION
+get         | /summary/reports                 | Get report summery
+get         | /reports/missions-by-status      | Get missions-by-status summery
+get         | /reports/top-agent               | Get top agent
+```
+
+### === System Flow ===
+user -> app -> route -> db repo -> db connection -> sql database
+
 ### === Run instructions ===
 docker run - 
 ```
@@ -104,4 +149,8 @@ docker run -d --name intelligence-mysql -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DAT
 
 ```
 pip install requirements.txt
+```
+run server:
+```
+uvicorn main:app
 ```
